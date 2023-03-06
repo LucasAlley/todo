@@ -1,16 +1,15 @@
 import clsx from "clsx";
+import { motion } from "framer-motion";
 import React from "react";
 
-export default function Card({ children, width = "w-3/12", margin }) {
+export default function Card({ children }) {
     return (
-        <div
+        <motion.div
             className={clsx(
-                "bg-white rounded border border-gray-300 p-8 shadow-lg z-20 max-h-full relative",
-                width,
-                margin
+                "bg-white rounded border border-gray-300 p-8 shadow-lg z-20 max-h-full relative"
             )}
         >
             {children}
-        </div>
+        </motion.div>
     );
 }

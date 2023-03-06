@@ -1,8 +1,10 @@
 import axios from "axios";
+import { motion } from "framer-motion";
 import { useEffect, useReducer } from "react";
 import List from "./components/List";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import Card from "./components/UI/Card";
 import ocean from "./images/ocean.png";
 
 //TODO: move statuses to a hook
@@ -33,7 +35,6 @@ export const USER_IS_LOGGED_OUT = "USER_IS_LOGGED_OUT";
 export const GOT_USER = "GOT_USER";
 export const USER_REGISTERED = "USER_REGISTERED";
 export const USER_LOGGED_IN = "USER_LOGGED_IN";
-const USER_NOT_FOUND = "USER_NOT_FOUND";
 
 function reducer(state = initialState, action) {
     const { type, payload } = action;
@@ -86,7 +87,6 @@ function reducer(state = initialState, action) {
                 isLoggingIn: true,
             };
         //user registered
-        //TODO: dont need user id in set, it weill get passed through a token
         case USER_REGISTERED:
             return {
                 ...state,
@@ -97,7 +97,6 @@ function reducer(state = initialState, action) {
         case USER_LOGGED_IN:
             return {
                 ...state,
-                userID: payload.userID,
                 isAuthenticated: true,
                 isLoggingIn: false,
             };
@@ -105,14 +104,7 @@ function reducer(state = initialState, action) {
         case GOT_USER:
             return {
                 ...state,
-                userID: payload.userID,
                 isAuthenticated: true,
-            };
-        //failed to grab user
-        case USER_NOT_FOUND:
-            return {
-                ...state,
-                userID: -1,
             };
 
         default:
@@ -134,7 +126,21 @@ function DynamicCard({ state = initialState, dispatch }) {
     ) : (
         <Register dispatch={dispatch} />
     );
-    return <>{toRender}</>;
+
+    const animation = {
+        width: state.isAuthenticated ? "60%" : "20%",
+    };
+
+    return (
+        <motion.div
+            initial={{ width: "20%" }}
+            animate={animation}
+            transition={{ duration: 0.6 }}
+            exit={{ width: "20%" }}
+        >
+            <Card>{toRender}</Card>
+        </motion.div>
+    );
 }
 
 function DynamicHeader({ state = initialState }) {

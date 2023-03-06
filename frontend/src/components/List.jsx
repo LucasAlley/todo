@@ -1,5 +1,6 @@
 import axios from "axios";
 import clsx from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
 import React, {
     Children,
     cloneElement,
@@ -10,10 +11,8 @@ import React, {
 import { USER_IS_LOGGED_OUT } from "../App";
 import useBoolean from "../hooks/useBoolean";
 import { SecondaryButton } from "./UI/Button";
-import Card from "./UI/Card";
 import Modal from "./UI/Modal";
 import Toggle from "./UI/Toggle";
-
 //todo
 function Todo({ todo, toggleComplete, updateDescription, deleteTodo }) {
     const [enabled, setEnabled] = useState(todo.complete === 1);
@@ -58,19 +57,30 @@ function Todo({ todo, toggleComplete, updateDescription, deleteTodo }) {
 //todo mapper
 function TodoMapper({ todos, toggleComplete, updateDescription, deleteTodo }) {
     return (
-        <>
-            <div className="divide-y divide-slate-300">
+        <div className="divide-y divide-slate-300">
+            <AnimatePresence mode="wait">
                 {todos.map((todo, idx) => (
-                    <Todo
+                    <motion.div
+                        initial={{
+                            opacity: 0,
+                            // translateX: idx % 2 === 0 ? -50 : 50,
+                            translateY: -50,
+                        }}
+                        animate={{ opacity: 1, translateY: 0 }}
+                        transition={{ duration: 0.2, delay: idx * 0.2 }}
+                        exit={{ opacity: 0, translateX: -50, duration: 1 }}
                         key={todo.id}
-                        todo={todo}
-                        toggleComplete={toggleComplete}
-                        updateDescription={updateDescription}
-                        deleteTodo={deleteTodo}
-                    />
+                    >
+                        <Todo
+                            todo={todo}
+                            toggleComplete={toggleComplete}
+                            updateDescription={updateDescription}
+                            deleteTodo={deleteTodo}
+                        />
+                    </motion.div>
                 ))}
-            </div>
-        </>
+            </AnimatePresence>
+        </div>
     );
 }
 //counter
@@ -252,7 +262,7 @@ export default function List({ dispatch }) {
                 "http://127.0.0.1:8000/api/todos",
                 {
                     description: newTodoRef.current.value,
-                    complete: activeFilter === 2,
+                    complete: activeFilter === 2 ? 1 : 0,
                 },
                 {
                     headers: {
@@ -357,7 +367,7 @@ export default function List({ dispatch }) {
 
     return (
         <>
-            <div className="xl:w-5/12 w-11/12 mb-4 bg-white z-10 rounded shadow p-4 flex items-center space-x-3">
+            <div className="w-full bg-white z-10 rounded shadow p-4 flex items-center space-x-3 mb-4">
                 <input
                     className="w-full text-gray-700 font-bold tracking-wide p-2 ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600"
                     placeholder="new todo.."
@@ -390,7 +400,7 @@ export default function List({ dispatch }) {
                 </button>
             </div>
 
-            <Card width="xl:w-5/12 w-11/12">
+            <div className="">
                 <div className="flex flex-col justify-between max-h-80 overflow-hidden overflow-y-scroll">
                     <TodoMapper
                         todos={todos}
@@ -423,7 +433,7 @@ export default function List({ dispatch }) {
                         Logout
                     </SecondaryButton>
                 </div>
-            </Card>
+            </div>
 
             <Modal open={open} toggle={toggle} handleClear={clearCompleted} />
         </>

@@ -3,7 +3,6 @@ import React, { useRef } from "react";
 import { statuses, USER_IS_LOGGING_IN, USER_REGISTERED } from "../App";
 import useFormState from "../hooks/useFormState";
 import Button from "./UI/Button";
-import Card from "./UI/Card";
 import Form from "./UI/Form";
 import { Input } from "./UI/Input";
 import Label from "./UI/Label";
@@ -44,7 +43,7 @@ export default function Register({ dispatch }) {
             dispatch({ type: statuses.RESOLVED });
 
             //set token in local storage
-            localStorage.set("authToken", data.token);
+            localStorage.setItem("authToken", data.token);
 
             //pass along user id
             dispatch({
@@ -71,40 +70,38 @@ export default function Register({ dispatch }) {
     }
 
     return (
-        <Card>
-            <Form onSubmit={handleRegister}>
-                <div>
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                        ref={emailRef}
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        required
-                        hasError={formErrors.email.hasError}
-                        error={formErrors.email.error}
-                        onFocus={errorCleanup}
-                    />
-                </div>
-                <div>
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                        ref={passwordRef}
-                        id="password"
-                        name="password"
-                        type="password"
-                        autoComplete="password"
-                        required
-                        hasError={formErrors.password.hasError}
-                        error={formErrors.password.error}
-                        onFocus={errorCleanup}
-                    />
-                </div>
+        <Form onSubmit={handleRegister}>
+            <div>
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                    ref={emailRef}
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    hasError={formErrors.email.hasError}
+                    error={formErrors.email.error}
+                    onFocus={errorCleanup}
+                />
+            </div>
+            <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                    ref={passwordRef}
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="password"
+                    required
+                    hasError={formErrors.password.hasError}
+                    error={formErrors.password.error}
+                    onFocus={errorCleanup}
+                />
+            </div>
 
-                <Link onClick={goToLogin}>Have an account?</Link>
-                <Button type="submit">Register</Button>
-            </Form>
-        </Card>
+            <Link onClick={goToLogin}>Have an account?</Link>
+            <Button type="submit">Register</Button>
+        </Form>
     );
 }
