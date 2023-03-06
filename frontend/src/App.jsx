@@ -26,7 +26,7 @@ export const USER_REGISTERED = "USER_REGISTERED";
 export const USER_LOGGED_IN = "USER_LOGGED_IN";
 
 function reducer(state = initialState, action) {
-    const { type, payload } = action;
+    const { type } = action;
     switch (type) {
         //flip booleans
         case USER_AUTHENTICATED:
@@ -161,30 +161,15 @@ function App() {
     }, []);
 
     return (
-        <>
-            {/* <button
-                className="bg-red-900 h-32 w-12 relative z-20"
-                type="button"
-                onClick={() => {
-                    if (state.isLoggingIn) {
-                        dispatch({ type: USER_IS_REGISTERING });
-                    } else {
-                        dispatch({ type: USER_IS_LOGGING_IN });
-                    }
-                }}
-            >
-                click mesdfsdfsdfsdfsdf
-            </button> */}
-            <div className="bg-gray-100 h-screen flex flex-col justify-center items-center ">
-                <DynamicHeader state={state} />
-                <DynamicCard state={state} dispatch={dispatch} />
-                <img
-                    className="w-full h-1/2 absolute top-0"
-                    src={ocean}
-                    alt="ocean"
-                />
-            </div>
-        </>
+        <div className="bg-gray-100 h-screen flex flex-col justify-center items-center ">
+            <DynamicHeader state={state} />
+            <DynamicCard state={state} dispatch={dispatch} />
+            <img
+                className="w-full h-1/2 absolute top-0"
+                src={ocean}
+                alt="ocean"
+            />
+        </div>
     );
 }
 
