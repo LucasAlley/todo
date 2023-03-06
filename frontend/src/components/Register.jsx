@@ -1,18 +1,22 @@
 import axios from "axios";
 import React, { useRef } from "react";
-import { statuses, USER_IS_LOGGING_IN, USER_REGISTERED } from "../App";
+import { USER_IS_LOGGING_IN, USER_REGISTERED } from "../App";
 import useFormState from "../hooks/useFormState";
+import useStatus from "../hooks/useStatus";
 import Button from "./UI/Button";
 import Form from "./UI/Form";
 import { Input } from "./UI/Input";
 import Label from "./UI/Label";
 import Link from "./UI/Link";
+import Spinner from "./UI/Spinner";
 
 export default function Register({ dispatch }) {
     const { formErrors, setFormErrors, errorCleanup } = useFormState({
         email: { hasError: false, error: "" },
         password: { hasError: false, error: "" },
     });
+
+    const [status, statusSetters] = useStatus("IDLE");
 
     //input refs
     const emailRef = useRef();
@@ -28,7 +32,7 @@ export default function Register({ dispatch }) {
             e.preventDefault();
 
             //loading
-            dispatch({ type: statuses.LOADING });
+            statusSetters.loading();
 
             //send request
             const { data } = await axios.post(
@@ -40,7 +44,7 @@ export default function Register({ dispatch }) {
             );
 
             //resolved
-            dispatch({ type: statuses.RESOLVED });
+            statusSetters.resolved();
 
             //set token in local storage
             localStorage.setItem("authToken", data.token);
@@ -50,6 +54,9 @@ export default function Register({ dispatch }) {
                 type: USER_REGISTERED,
             });
         } catch (error) {
+            //failed
+            statusSetters.failed();
+
             if (error.response.data.errors) {
                 const formattedErrors = {};
                 for (const key in error.response.data.errors) {
@@ -64,8 +71,6 @@ export default function Register({ dispatch }) {
                     ...formattedErrors,
                 }));
             }
-
-            dispatch({ type: statuses.FAILED });
         }
     }
 
@@ -83,6 +88,7 @@ export default function Register({ dispatch }) {
                     hasError={formErrors.email.hasError}
                     error={formErrors.email.error}
                     onFocus={errorCleanup}
+                    disabled={status === "LOADING" || status === "RESOLVED"}
                 />
             </div>
             <div>
@@ -97,11 +103,17 @@ export default function Register({ dispatch }) {
                     hasError={formErrors.password.hasError}
                     error={formErrors.password.error}
                     onFocus={errorCleanup}
+                    disabled={status === "LOADING" || status === "RESOLVED"}
                 />
             </div>
 
             <Link onClick={goToLogin}>Have an account?</Link>
-            <Button type="submit">Register</Button>
+            <Button
+                type="submit"
+                disabled={status === "LOADING" || status === "RESOLVED"}
+            >
+                {status === "LOADING" ? <Spinner /> : "Register"}
+            </Button>
         </Form>
     );
 }

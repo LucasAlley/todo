@@ -1,18 +1,21 @@
 import axios from "axios";
 import React, { useRef } from "react";
-import { statuses, USER_IS_REGISTERING, USER_LOGGED_IN } from "../App";
+import { USER_IS_REGISTERING, USER_LOGGED_IN } from "../App";
 import useFormState from "../hooks/useFormState";
+import useStatus from "../hooks/useStatus";
 import Button from "./UI/Button";
 import Form from "./UI/Form";
 import { Input } from "./UI/Input";
 import Label from "./UI/Label";
 import Link from "./UI/Link";
+import Spinner from "./UI/Spinner";
 
 export default function Login({ dispatch }) {
     const { formErrors, setFormErrors, errorCleanup } = useFormState({
         email: { hasError: false, error: "" },
         password: { hasError: false, error: "" },
     });
+    const [status, statusSetters] = useStatus("IDLE");
 
     //input refs
     const emailRef = useRef();
@@ -27,6 +30,9 @@ export default function Login({ dispatch }) {
         e.preventDefault();
 
         try {
+            //loading
+            statusSetters.loading();
+
             //send request
             const { data } = await axios.post(
                 "http://127.0.0.1:8000/api/login",
@@ -37,7 +43,7 @@ export default function Login({ dispatch }) {
             );
 
             //resolved
-            dispatch({ type: statuses.RESOLVED });
+            statusSetters.resolved();
 
             //set token in local storage
             localStorage.setItem("authToken", data.token);
@@ -50,6 +56,9 @@ export default function Login({ dispatch }) {
                 },
             });
         } catch (error) {
+            //failed
+            statusSetters.failed();
+
             //set generic errors
             setFormErrors({
                 email: {
@@ -78,6 +87,7 @@ export default function Login({ dispatch }) {
                     hasError={formErrors.email.hasError}
                     error={formErrors.email.error}
                     onFocus={errorCleanup}
+                    disabled={status === "LOADING" || status === "RESOLVED"}
                 />
             </div>
             <div>
@@ -92,12 +102,18 @@ export default function Login({ dispatch }) {
                     onChange={errorCleanup}
                     hasError={formErrors.password.hasError}
                     error={formErrors.password.error}
+                    disabled={status === "LOADING" || status === "RESOLVED"}
                 />
             </div>
             <Link type="button" onClick={goToRegister}>
                 Don't have an account?
             </Link>
-            <Button type="submit">Login</Button>
+            <Button
+                type="submit"
+                disabled={status === "LOADING" || status === "RESOLVED"}
+            >
+                {status === "LOADING" ? <Spinner /> : "Login"}
+            </Button>
         </Form>
     );
 }

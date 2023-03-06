@@ -7,17 +7,6 @@ import Register from "./components/Register";
 import Card from "./components/UI/Card";
 import ocean from "./images/ocean.png";
 
-//TODO: move statuses to a hook
-//TODO: move constants to constants folder
-
-//status
-export const statuses = {
-    IDLE: "IDLE",
-    LOADING: "LOADING",
-    RESOLVED: "RESOLVED",
-    FAILED: "FAILED",
-};
-
 //initial state
 const initialState = {
     isAuthenticated: false,
@@ -39,27 +28,6 @@ export const USER_LOGGED_IN = "USER_LOGGED_IN";
 function reducer(state = initialState, action) {
     const { type, payload } = action;
     switch (type) {
-        //set status
-        case statuses.IDLE:
-            return {
-                ...state,
-                status: statuses.IDLE,
-            };
-        case statuses.LOADING:
-            return {
-                ...state,
-                status: statuses.LOADING,
-            };
-        case statuses.RESOLVED:
-            return {
-                ...state,
-                status: statuses.RESOLVED,
-            };
-        case statuses.FAILED:
-            return {
-                ...state,
-                status: statuses.FAILED,
-            };
         //flip booleans
         case USER_AUTHENTICATED:
             return {
@@ -127,14 +95,12 @@ function DynamicCard({ state = initialState, dispatch }) {
         <Register dispatch={dispatch} />
     );
 
-    const animation = {
-        width: state.isAuthenticated ? "60%" : "20%",
-    };
-
     return (
         <motion.div
             initial={{ width: "20%" }}
-            animate={animation}
+            animate={{
+                width: state.isAuthenticated ? "60%" : "20%",
+            }}
             transition={{ duration: 0.6 }}
             exit={{ width: "20%" }}
         >
