@@ -10,18 +10,27 @@ import React, {
 } from "react";
 import { USER_IS_LOGGED_OUT } from "../App";
 import useBoolean from "../hooks/useBoolean";
-import { SecondaryButton } from "./UI/Button";
-import Modal from "./UI/Modal";
+import { DangerButton, SecondaryButton } from "./UI/Button";
+import Modal, { ModalContent, ModalFooter } from "./UI/Modal";
 import Toggle from "./UI/Toggle";
 //todo
-function Todo({ todo, toggleComplete, updateDescription, deleteTodo }) {
+function Todo({
+    todo,
+    toggleComplete,
+    updateDescription,
+    setSelectedTodo,
+    toggleSingle,
+}) {
     const [enabled, setEnabled] = useState(todo.complete === 1);
 
     return (
         <div className="p-4 flex items-center space-x-2">
             <button
                 type="button"
-                onClick={() => deleteTodo(todo.id)}
+                onClick={() => {
+                    setSelectedTodo(todo);
+                    toggleSingle();
+                }}
                 className="bg-red-100 hover:bg-red-300 rounded-full p-2 transition-all duration-150"
             >
                 <svg
@@ -55,7 +64,14 @@ function Todo({ todo, toggleComplete, updateDescription, deleteTodo }) {
     );
 }
 //todo mapper
-function TodoMapper({ todos, toggleComplete, updateDescription, deleteTodo }) {
+function TodoMapper({
+    todos,
+    toggleComplete,
+    updateDescription,
+    deleteTodo,
+    setSelectedTodo,
+    toggleSingle,
+}) {
     return (
         <div className="divide-y divide-slate-300">
             <AnimatePresence mode="wait">
@@ -76,6 +92,8 @@ function TodoMapper({ todos, toggleComplete, updateDescription, deleteTodo }) {
                             toggleComplete={toggleComplete}
                             updateDescription={updateDescription}
                             deleteTodo={deleteTodo}
+                            setSelectedTodo={setSelectedTodo}
+                            toggleSingle={toggleSingle}
                         />
                     </motion.div>
                 ))}
@@ -127,9 +145,13 @@ function FiltersContainer({ children, activeFilter, setActiveFilter }) {
 
 export default function List({ dispatch }) {
     const [todos, setTodos] = useState([]);
+    const [selectedTodo, setSelectedTodo] = useState({});
     const [activeFilter, setActiveFilter] = useState(0);
 
-    const [open, { toggle }] = useBoolean(false);
+    //clear multiple todos
+    const [openClearWarning, { toggle: toggleClear }] = useBoolean(false);
+    //clear single todo
+    const [openSingleWarning, { toggle: toggleSingle }] = useBoolean(false);
 
     const newTodoRef = useRef();
 
@@ -307,18 +329,18 @@ export default function List({ dispatch }) {
             );
 
             //toggle modal
-            toggle();
+            toggleClear();
         } catch (error) {
             console.log(error);
         }
     }
 
     //clear single todo
-    async function deleteTodo(todoID) {
+    async function deleteTodo() {
         try {
             //send request
             await axios.delete(
-                `http://127.0.0.1:8000/api/todos/${todoID}`,
+                `http://127.0.0.1:8000/api/todos/${selectedTodo.id}`,
 
                 {
                     headers: {
@@ -331,11 +353,13 @@ export default function List({ dispatch }) {
 
             //set state
             setTodos((currentState) =>
-                currentState.filter((c) => c.id !== todoID)
+                currentState.filter((c) => c.id !== selectedTodo.id)
             );
 
+            setSelectedTodo({});
+
             //toggle modal TODO:
-            // toggle();
+            toggleSingle();
         } catch (error) {
             console.log(error);
         }
@@ -407,6 +431,8 @@ export default function List({ dispatch }) {
                         toggleComplete={toggleComplete}
                         updateDescription={updateDescription}
                         deleteTodo={deleteTodo}
+                        setSelectedTodo={setSelectedTodo}
+                        toggleSingle={toggleSingle}
                     />
                 </div>
                 <div className="flex sm:flex-row flex-col justify-between items-center mt-2  border-t border-t-slate-300 pt-6">
@@ -422,7 +448,7 @@ export default function List({ dispatch }) {
                     <button
                         className="text-gray-500 font-light tracking-wide text-sm"
                         type="button"
-                        onClick={toggle}
+                        onClick={toggleClear}
                     >
                         Clear completed
                     </button>
@@ -435,7 +461,39 @@ export default function List({ dispatch }) {
                 </div>
             </div>
 
-            <Modal open={open} toggle={toggle} handleClear={clearCompleted} />
+            <Modal open={openSingleWarning} toggle={toggleSingle}>
+                <ModalContent title="Clear Todo">
+                    Are you sure you want to delete this todo? All of your data
+                    will be permanently removed from our servers forever. This
+                    action cannot be undone.
+                </ModalContent>
+                <ModalFooter>
+                    <DangerButton onClick={deleteTodo}>Clear</DangerButton>
+                    <SecondaryButton
+                        style={{ width: "20%" }}
+                        onClick={toggleSingle}
+                    >
+                        Cancel
+                    </SecondaryButton>
+                </ModalFooter>
+            </Modal>
+
+            <Modal open={openClearWarning} toggle={toggleClear}>
+                <ModalContent title="Clear Completed Todos">
+                    Are you sure you want to delete your completed todos? All of
+                    your data will be permanently removed from our servers
+                    forever. This action cannot be undone.
+                </ModalContent>
+                <ModalFooter>
+                    <DangerButton onClick={clearCompleted}>Clear</DangerButton>
+                    <SecondaryButton
+                        style={{ width: "20%" }}
+                        onClick={toggleClear}
+                    >
+                        Cancel
+                    </SecondaryButton>
+                </ModalFooter>
+            </Modal>
         </>
     );
 }
